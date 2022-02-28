@@ -26,11 +26,11 @@ while True:
     cam.release()
     time.sleep(sleepTime)
 
-    if s: 
+    if s:
         print(cv2.imwrite(f"/home/pi/Documents/huawei-hackathon/rpi/images/image_{count}.jpg",img)) #save image
 
-    src_prevImage = cv2.imread("/home/pi/Documents/huawei-hackathon/rpi/images/image_{count -1}.jpg")
-    src_currentImage = cv2.imread("/home/pi/Documents/huawei-hackathon/rpi/images/image_{count}.jpg")
+    src_prevImage = cv2.imread(f"/home/pi/Documents/huawei-hackathon/rpi/images/image_{count -1}.jpg")
+    src_currentImage = cv2.imread(f"/home/pi/Documents/huawei-hackathon/rpi/images/image_{count}.jpg")
 
     # opencv compare histogram between src_prevImage and src_currentImage
     # if the difference is less than 10%, then it is a match
@@ -49,9 +49,9 @@ while True:
     # compute the value of the correlation
     # if the value is greater than 0.9, then it is a match
     # if the value is less than 0.9, then it is not a match
-    (score, diff) = cv2.compareHist(hist_prevImage, hist_currentImage, cv2.HISTCMP_CORREL)
-    print(score)
+    score = cv2.compareHist(hist_prevImage, hist_currentImage, cv2.HISTCMP_CORREL)
+
     if score > 0.9:
-        print("Match")
+        print(f"Match between image_{count-1}.jpg and image_{count} with score {score}")
     else:
-        print("No Match")
+        print(f"No Match between image_{count-1}.jpg and image_{count}. Score: {score}")
