@@ -15,7 +15,7 @@ while True:
     if len([name for name in fileList]) == 0:
         count = 0
     else:
-        newestFile = max(fullPath, key-os.path.getctime(path))
+        newestFile = max(fullPath, key=os.path.getctime(path))
         count = int(newestFile.split('/')[-1].split('.')[0])
 
     cam = VideoCapture(0) 
