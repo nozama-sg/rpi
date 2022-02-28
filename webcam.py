@@ -1,6 +1,5 @@
 
-import os, time
-from cv2 import *
+import os, time, cv2
 
 sleepTime = 5
 
@@ -18,7 +17,7 @@ while True:
         newestFile = max(fullPath, key=os.path.getctime)
         count = int(newestFile.split('/')[-1].split('.')[0])
 
-    cam = VideoCapture(0) 
+    cam = cv2.VideoCapture(0) 
     s, img = cam.read()
 
     time.sleep(sleepTime)
@@ -29,5 +28,5 @@ while True:
         # waitKey(0)
         # destroyWindow("cam-test")
         
-        imwrite(f"images/image_{count}",img) #save image
+        cv2.imwrite(f"images/image_{count}",img) #save image
         count += 1
