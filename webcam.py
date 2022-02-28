@@ -15,7 +15,7 @@ while True:
         count = 0
     else:
         newestFile = max(fullPath, key=os.path.getctime)
-        count = int(newestFile.split('/')[-1].split('.')[0])
+        count = int(newestFile.split('/')[-1].split('.')[0].split('_')[-1])
 
     cam = cv2.VideoCapture(0) 
     s, img = cam.read()
