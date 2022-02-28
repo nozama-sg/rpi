@@ -32,13 +32,26 @@ while True:
     src_prevImage = cv2.imread("/home/pi/Documents/huawei-hackathon/rpi/images/image_{count -1}.jpg")
     src_currentImage = cv2.imread("/home/pi/Documents/huawei-hackathon/rpi/images/image_{count}.jpg")
 
-    hsv_prevImage = cv2.cvtColor(src_prevImage, cv2.COLOR_BGR2HSV)
-    hsv_currentImage = cv2.cvtColor(src_currentImage, cv2.COLOR_BGR2HSV)
+    # opencv compare histogram between src_prevImage and src_currentImage
+    # if the difference is less than 10%, then it is a match
 
-    # calculate the absolute difference between the current and previous image
-    frameDelta = cv2.absdiff(hsv_prevImage, hsv_currentImage)
+    # convert the images to grayscale
+    gray_prevImage = cv2.cvtColor(src_prevImage, cv2.COLOR_BGR2GRAY)
+    gray_currentImage = cv2.cvtColor(src_currentImage, cv2.COLOR_BGR2GRAY)
 
-    # return numeric value of differnce between images
-    thresh = cv2.threshold(frameDelta, 25, 255, cv2.THRESH_BINARY)[1]
+    # compute the histogram of the two images and normalize
+    hist_prevImage = cv2.calcHist([gray_prevImage], [0], None, [256], [0, 256])
+    hist_currentImage = cv2.calcHist([gray_currentImage], [0], None, [256], [0, 256])
+    hist_prevImage = cv2.normalize(hist_prevImage, hist_prevImage, 0, 1, cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+    hist_currentImage = cv2.normalize(hist_currentImage, hist_currentImage, 0, 1, cv2.NORM_MINMAX, dtype=cv2.CV_32F)
 
-    print(thresh)
+    # compute the correlation between the two images
+    # compute the value of the correlation
+    # if the value is greater than 0.9, then it is a match
+    # if the value is less than 0.9, then it is not a match
+    (score, diff) = cv2.compareHist(hist_prevImage, hist_currentImage, cv2.HISTCMP_CORREL)
+    print(score)
+    if score > 0.9:
+        print("Match")
+    else:
+        print("No Match")
