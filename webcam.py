@@ -1,7 +1,7 @@
 
 import os, time, cv2
 
-sleepTime = 5
+sleepTime = 10
 
 while True:
     fileList = os.listdir('images')
@@ -29,29 +29,32 @@ while True:
     if s:
         print(cv2.imwrite(f"/home/pi/Documents/huawei-hackathon/rpi/images/image_{count}.jpg",img)) #save image
 
-    src_prevImage = cv2.imread(f"/home/pi/Documents/huawei-hackathon/rpi/images/image_{count -1}.jpg")
-    src_currentImage = cv2.imread(f"/home/pi/Documents/huawei-hackathon/rpi/images/image_{count}.jpg")
+    # comparison with previous image
 
-    # opencv compare histogram between src_prevImage and src_currentImage
-    # if the difference is less than 10%, then it is a match
+    if count > 1:
+        src_prevImage = cv2.imread(f"/home/pi/Documents/huawei-hackathon/rpi/images/image_{count -1}.jpg")
+        src_currentImage = cv2.imread(f"/home/pi/Documents/huawei-hackathon/rpi/images/image_{count}.jpg")
 
-    # convert the images to grayscale
-    gray_prevImage = cv2.cvtColor(src_prevImage, cv2.COLOR_BGR2GRAY)
-    gray_currentImage = cv2.cvtColor(src_currentImage, cv2.COLOR_BGR2GRAY)
+        # opencv compare histogram between src_prevImage and src_currentImage
+        # if the difference is less than 10%, then it is a match
 
-    # compute the histogram of the two images and normalize
-    hist_prevImage = cv2.calcHist([gray_prevImage], [0], None, [256], [0, 256])
-    hist_currentImage = cv2.calcHist([gray_currentImage], [0], None, [256], [0, 256])
-    hist_prevImage = cv2.normalize(hist_prevImage, hist_prevImage, 0, 1, cv2.NORM_MINMAX, dtype=cv2.CV_32F)
-    hist_currentImage = cv2.normalize(hist_currentImage, hist_currentImage, 0, 1, cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+        # convert the images to grayscale
+        gray_prevImage = cv2.cvtColor(src_prevImage, cv2.COLOR_BGR2GRAY)
+        gray_currentImage = cv2.cvtColor(src_currentImage, cv2.COLOR_BGR2GRAY)
 
-    # compute the correlation between the two images
-    # compute the value of the correlation
-    # if the value is greater than 0.9, then it is a match
-    # if the value is less than 0.9, then it is not a match
-    score = cv2.compareHist(hist_prevImage, hist_currentImage, cv2.HISTCMP_CORREL)
+        # compute the histogram of the two images and normalize
+        hist_prevImage = cv2.calcHist([gray_prevImage], [0], None, [256], [0, 256])
+        hist_currentImage = cv2.calcHist([gray_currentImage], [0], None, [256], [0, 256])
+        hist_prevImage = cv2.normalize(hist_prevImage, hist_prevImage, 0, 1, cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+        hist_currentImage = cv2.normalize(hist_currentImage, hist_currentImage, 0, 1, cv2.NORM_MINMAX, dtype=cv2.CV_32F)
 
-    if score > 0.9:
-        print(f"Match between image_{count-1}.jpg and image_{count} with score {score}")
-    else:
-        print(f"No Match between image_{count-1}.jpg and image_{count}. Score: {score}")
+        # compute the correlation between the two images
+        # compute the value of the correlation
+        # if the value is greater than 0.9, then it is a match
+        # if the value is less than 0.9, then it is not a match
+        score = cv2.compareHist(hist_prevImage, hist_currentImage, cv2.HISTCMP_CORREL)
+
+        if score > 0.9:
+            print(f"Match between image_{count-1}.jpg and image_{count} with score {score}")
+        else:
+            print(f"No Match between image_{count-1}.jpg and image_{count}. Score: {score}")
