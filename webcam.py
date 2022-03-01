@@ -3,6 +3,10 @@ import os, time, cv2, requests, base64, json
 shortSleep = 60 * 5
 longSleep = 60 * 20
 
+# testing
+shortSleep = 5
+longSleep = 20
+
 sleepTime = shortSleep
 matchValue = 0.7
 positiveResponse = 0
@@ -95,10 +99,15 @@ while True:
             print(f"Match between image_{count-1}.jpg and image_{count} with score {score}")
         else: # no match
             print(f"No Match between image_{count-1}.jpg and image_{count}. Score: {score}")
+
             
+            # testing
+                        
             # send data to AWS
-            rekognitionResponse = postImageRekognition(count)
-            categories = [name['Name'] for name in rekognitionResponse]
+            # rekognitionResponse = postImageRekognition(count)
+            # categories = [name['Name'] for name in rekognitionResponse]
+
+            categories = ['Dish']
 
             if "Dish" in categories or "Meal" in categories or "Food" in categories:
                 positiveResponse += 1
