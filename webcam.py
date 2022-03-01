@@ -1,4 +1,4 @@
-import os, cv2, requests, base64, json
+import os, cv2, requests, base64, json, time
 
 shortSleep = 60 * 5
 longSleep = 60 * 20
@@ -9,7 +9,7 @@ longSleep = 20
 
 sleepTime = shortSleep
 matchValue = 0.7
-positiveResponse = 0
+positiveResponses = 0
 userId = "darentan"
 
 def checkImage(count):
@@ -35,7 +35,7 @@ def checkImage(count):
     return score
 
 def postImageRekognition(imageName):
-    with open(f"images/{imageName}.jpg", "rb") as imageFile:
+    with open(f"images/image_{imageName}.jpg", "rb") as imageFile:
         imageData = base64.b64encode(imageFile.read())
     
     data = {
@@ -50,11 +50,12 @@ def postImageRekognition(imageName):
     return response
 
 def postImageHuawei(imageName, userId):
-    with open(f"images/{imageName}.jpg", "rb") as imageFile:
+    with open(f"images/image_{imageName}.jpg", "rb") as imageFile:
         imageData = base64.b64encode(imageFile.read())
 
     data = {
-        "userId": userId
+        "userId": userId,
+        "image": imageData.decode()
     }
 
     response = requests.post("http://119.13.104.214:80/uploadFoodImage", json=data)
@@ -96,9 +97,9 @@ while True:
         score = checkImage(count)
 
         if score >= matchValue: # if match
-            print(f"Match between image_{count-1}.jpg and image_{count} with score {score}")
+            print(f"Match between image_{count-1}.jpg and image_{count}.jpg with score {score}")
         else: # no match
-            print(f"No Match between image_{count-1}.jpg and image_{count}. Score: {score}")
+            print(f"NO MATCH  between image_{count-1}.jpg and image_{count}.jpg Score: {score}")
 
             
             # testing
@@ -110,12 +111,12 @@ while True:
             categories = ['Dish']
 
             if "Dish" in categories or "Meal" in categories or "Food" in categories:
-                positiveResponse += 1
+                positiveResponses += 1
                 sleepTime = longSleep
 
-                if positiveResponse == 1:
+                if positiveResponses == 1:
                     # send to OBS
-                    postImageHuawei(count, userId)
+                    print(postImageHuawei(count, userId))
                     print(f"Image {count}.jpg has been uploaded to Huawei OBS")
 
                 else:
@@ -123,7 +124,7 @@ while True:
 
             else:
                 print("No food detected")
-                positiveResponse = 0
+                positiveResponses = 0
                 sleepTime = shortSleep
         
     time.sleep(sleepTime)
