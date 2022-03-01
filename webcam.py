@@ -3,10 +3,6 @@ import os, cv2, requests, base64, json, time
 shortSleep = 60 * 5
 longSleep = 60 * 20
 
-# testing
-shortSleep = 5
-longSleep = 20
-
 sleepTime = shortSleep
 matchValue = 0.7
 positiveResponses = 0
@@ -102,13 +98,9 @@ while True:
             print(f"NO MATCH  between image_{count-1}.jpg and image_{count}.jpg Score: {score}")
 
             
-            # testing
-                        
             # send data to AWS
-            # rekognitionResponse = postImageRekognition(count)
-            # categories = [name['Name'] for name in rekognitionResponse]
-
-            categories = ['Dish']
+            rekognitionResponse = postImageRekognition(count)
+            categories = [name['Name'] for name in rekognitionResponse]
 
             if "Dish" in categories or "Meal" in categories or "Food" in categories:
                 positiveResponses += 1
@@ -116,11 +108,13 @@ while True:
 
                 if positiveResponses == 1:
                     # send to OBS
-                    print(postImageHuawei(count, userId))
-                    print(f"Image {count}.jpg has been uploaded to Huawei OBS")
+                    if postImageHuawei(count, userId).status_code  == 200:
+                        print(f"Image {count}.jpg has been successfully uploaded to Huawei OBS")
+                    else:
+                        print("Error uploaded to Huawei OBS")
 
                 else:
-                    print(f"{positiveResponses} logs of food have occured previously. Data is not being sent.")
+                    print(f"{positiveResponses-1} logs of food have occured previously. Data is not being sent.")
 
             else:
                 print("No food detected")
