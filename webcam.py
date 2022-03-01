@@ -1,4 +1,4 @@
-import os, time, cv2, requests, base64, json
+import os, cv2, requests, base64, json
 
 shortSleep = 60 * 5
 longSleep = 60 * 20
