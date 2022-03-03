@@ -40,13 +40,13 @@ def announceMessage():
         # get json value from request
         content = flask.request.json
         text = content['text']
+        print(f"Received message: {text}")
+        
     except Exception as e:
         print(e)
         return 'Invalid JSON'
 
     engine = pyttsx3.init()
-    voices = engine.getProperty('voices')
-    engine.setProperty('voice', voices[1].id)   #1 for female
     engine.say(text)
     engine.runAndWait()
     

@@ -6,12 +6,13 @@ import datetime
 import requests
 import userpass
 
-# mqttServerIP = 'localhost'
-mqttServerIP = '192.168.1.104'
+mqttServerIP = 'localhost'
+# mqttServerIP = '192.168.1.104'
+
 userId = "darentan"
 deviceName = 'iBeacon:c80c71ef-1086-4601-9dc1-c83eadb4be7c-0-0'
 bluetoothUpdateURL = "http://119.13.104.214:80/locationUpdate"
-updateDelayTime = 10
+updateDelayTime = 60
 
 valuesDict = {}
 
@@ -53,7 +54,7 @@ def onLog(client, userdata, level, buf):
 client = paho.Client("RPi Client")
 client.username_pw_set(userpass.user, userpass.password)
 client.on_message = onMessage
-client.on_log = onLog
+# client.on_log = onLog
 
 if client.connect(mqttServerIP, 1883) != 0:
     print("Could not connect to MQTT Broker")
