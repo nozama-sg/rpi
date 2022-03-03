@@ -2,7 +2,6 @@ import paho.mqtt.client as paho
 import sys
 import time
 import json
-import datetime
 import requests
 import userpass
 
@@ -32,13 +31,10 @@ def onMessage(client, userdata, message):
     # get key in valuesDict with highest value
     maxBaseStation = max(valuesDict, key=valuesDict.get)
     print(maxBaseStation)
-
-    now = datetime.datetime.now().strftime('%Y-%m-%d %X')
     
     data = {
         "userId": userId,
         "roomName": maxBaseStation,
-        "timestamp": now
     }
 
     response = requests.post(bluetoothUpdateURL, json=data)
