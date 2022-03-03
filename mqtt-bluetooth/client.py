@@ -4,6 +4,7 @@ import time
 import json
 import datetime
 import requests
+import userpass
 
 # mqttServerIP = 'localhost'
 mqttServerIP = '192.168.1.104'
@@ -50,6 +51,7 @@ def onLog(client, userdata, level, buf):
     print(f"LOG: {buf}")
 
 client = paho.Client("RPi Client")
+client.username_pw_set(userpass.user, userpass.password)
 client.on_message = onMessage
 client.on_log = onLog
 
