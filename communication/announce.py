@@ -5,7 +5,7 @@ import os
 import requests
 import pyttsx3
 
-userId = 'darentan'
+userId = "15"
 endpointUpdateURL = 'http://119.13.104.214:80/announcementEndpointUpdate'
 
 # creating tunnel endpoint
@@ -23,13 +23,15 @@ print(f"Tunnel created at URL: {tunnelURL}")
 # posting endpoint to GaussDB server
 data = {
     "userId": userId,
-    "URL": tunnelURL
+    "tunnelUrl": tunnelURL
 }
 
 response = requests.post(endpointUpdateURL, json=data)
 
 if response.status_code != 200:
     print(f"\nENDPOINT POST ERROR: {response.status_code} | {response.text}")
+else:
+    print(f"tunnelURl {tunnelURL} has been updated to database")
 
 # flask server
 app = flask.Flask(__name__)
