@@ -1,4 +1,9 @@
-import os, cv2, requests, base64, json, time
+import os
+import cv2
+import requests
+import base64
+import json
+import time
 
 shortSleep = 60 * 5
 longSleep = 60 * 20
@@ -6,7 +11,10 @@ longSleep = 60 * 20
 sleepTime = shortSleep
 matchValue = 0.7
 positiveResponses = 0
+
 userId = "darentan"
+foodImageUploadURL = "http://119.13.104.214:80/uploadFoodImage"
+rekognitionURL = "http://localhost:4000/api/Upload"
 
 def checkImage(count):
     src_prevImage = cv2.imread(f"/home/pi/Documents/huawei-hackathon/rpi/images/image_{count-1}.jpg")
@@ -38,7 +46,7 @@ def postImageRekognition(imageName):
         "b64": imageData.decode()
     }
     
-    response = requests.post("http://localhost:4000/api/Upload", json=data)
+    response = requests.post(rekognitionURL, json=data)
     
     # read response in json
     response = json.loads(response.text)
@@ -54,7 +62,7 @@ def postImageHuawei(imageName, userId):
         "image": imageData.decode()
     }
 
-    response = requests.post("http://119.13.104.214:80/uploadFoodImage", json=data)
+    response = requests.post(foodImageUploadURL, json=data)
 
     return response
 

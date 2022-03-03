@@ -3,8 +3,8 @@ import sys
 import time
 import json
 
-# ip_address = 'localhost'
-ipAddress = '192.168.1.104'
+mqttServerIP = 'localhost'
+# mqttServerIP = '192.168.1.104'
 deviceName = 'iBeacon:c80c71ef-1086-4601-9dc1-c83eadb4be7c-0-0'
 
 valuesDict = {}
@@ -33,7 +33,7 @@ client = paho.Client("RPi Client")
 client.on_message = onMessage
 # client.on_log = onLog
 
-if client.connect(ipAddress, 1883) != 0:
+if client.connect(mqttServerIP, 1883) != 0:
     print("Could not connect to MQTT Broker!")
     sys.exit(-1)
 
