@@ -3,6 +3,7 @@ import sys
 import time
 import json
 import datetime
+import requests
 
 # mqttServerIP = 'localhost'
 mqttServerIP = '192.168.1.104'
@@ -50,7 +51,7 @@ def onLog(client, userdata, level, buf):
 
 client = paho.Client("RPi Client")
 client.on_message = onMessage
-# client.on_log = onLog
+client.on_log = onLog
 
 if client.connect(mqttServerIP, 1883) != 0:
     print("Could not connect to MQTT Broker")
