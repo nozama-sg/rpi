@@ -4,6 +4,7 @@ import time
 import os
 import requests
 import pyttsx3
+import vlc
 
 userId = "15"
 endpointUpdateURL = 'http://119.13.104.214:80/announcementEndpointUpdate'
@@ -36,6 +37,9 @@ else:
 # flask server
 app = flask.Flask(__name__)
 
+# TODO
+# announceAudio, recordAudio + sendAudio
+
 @app.route('/announceMessage', methods=['POST'])
 def announceMessage():
     try:
@@ -46,7 +50,7 @@ def announceMessage():
         
     except Exception as e:
         print(e)
-        return 'Invalid JSON'
+        return 'Invalid JSON for announceMessage'
 
     engine = pyttsx3.init()
     engine.say(text)
@@ -59,13 +63,42 @@ def announceAudio():
     try:
         content = flask.request.json
         URL = content['URL']
+        print(f"Received audio: {URL}")
+
+        fileType = URL.split('.')[-1]
+
+        # get the list of files in the directory and fullPath of files
+        fileList = os.listdir('announceAudio')
+        fullPath = [f"announceAudio/{name}" for name in fileList]
+
+        # remove oldest file
+        if len([name for name in fileList]) > 10:
+            oldestFile = min(fullPath, key=os.path.getctime)
+            os.remove(oldestFile)
+
+        # update list of files in dir and fullpath of files
+        fileList = os.listdir('announceAudio')
+        fullPath = [f"announceAudio/{name}" for name in fileList]
+
+        # determining new file name
+        if len([name for name in fileList]) == 0:
+            count = 1
+        else:
+            newestFile = max(fullPath, key=os.path.getctime)
+            count = int(newestFile.split('/')[-1].split('.')[0].split('_')[-1]) + 1
+
+        # download audio file
+        r = requests.get(URL)
+        with open(f"announceAudio/audio_{count}.{fileType}", "wb") as f:
+            f.write(r.content)
+        
+        # play audio file
+        player = vlc.MediaPlayer(f"/announceAudio/audio_{count}.{fileType}")
+        player.play()
 
     except Exception as e:
         print(e)
-        return 'Invalid JSON'
-
-    # play audio
-    # this is still in progress
+        return 'Invalid JSON for announceAudio'
 
     return 'OK'
 
