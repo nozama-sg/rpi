@@ -27,12 +27,16 @@ data = {
     "tunnelUrl": tunnelURL
 }
 
-response = requests.post(endpointUpdateURL, json=data)
+try:
+    response = requests.post(endpointUpdateURL, json=data)
 
-if response.status_code != 200:
-    print(f"\nENDPOINT POST ERROR: {response.status_code} | {response.text}")
-else:
-    print(f"tunnelURl {tunnelURL} has been updated to database")
+    if response.status_code != 200:
+        print(f"\nENDPOINT POST ERROR: {response.status_code} | {response.text}")
+    else:
+        print(f"tunnelURl {tunnelURL} has been updated to database")
+
+except:
+    print('ERROR: UNABLE TO POST ENDPOINT TO SERVER')
 
 # flask server
 app = flask.Flask(__name__)
@@ -54,7 +58,7 @@ def announceMessage():
 
     # get the list of files in the directory and fullPath of files
     fileList = os.listdir('announceMessage')
-    fullPath = [f"announceMessage/{name}" for name in fileList]
+    fullPath = [f"./announceMessage/{name}" for name in fileList]
     
     # determining fileName
     if len([name for name in fileList]) == 0:
@@ -64,7 +68,7 @@ def announceMessage():
         count = int(newestFile.split('/')[-1].split('.')[0].split('_')[-1]) + 1
 
     # save message to file
-    with open(f"announceMessage/message_{count}.txt", "w") as file:
+    with open(f"./announceMessage/message_{count}.txt", "w") as file:
         file.writelines(text)
 
     engine = pyttsx3.init()
@@ -88,7 +92,7 @@ def announceAudio():
 
     # get the list of files in the directory and fullPath of files
     fileList = os.listdir('announceAudio')
-    fullPath = [f"announceAudio/{name}" for name in fileList]
+    fullPath = [f"./announceAudio/{name}" for name in fileList]
 
     # remove oldest file
     if len([name for name in fileList]) > 10:
@@ -97,7 +101,7 @@ def announceAudio():
 
     # update list of files in dir and fullpath of files
     fileList = os.listdir('announceAudio')
-    fullPath = [f"announceAudio/{name}" for name in fileList]
+    fullPath = [f"./announceAudio/{name}" for name in fileList]
 
     # determining new file name
     if len([name for name in fileList]) == 0:
@@ -108,11 +112,11 @@ def announceAudio():
 
     # download audio file
     r = requests.get(URL)
-    with open(f"announceAudio/audio_{count}.{fileType}", "wb") as f:
+    with open(f"./announceAudio/audio_{count}.{fileType}", "wb") as f:
         f.write(r.content)
     
     # play audio file
-    player = vlc.MediaPlayer(f"/announceAudio/audio_{count}.{fileType}")
+    player = vlc.MediaPlayer(f"./announceAudio/audio_{count}.{fileType}")
     player.play()
 
     return 'OK'
