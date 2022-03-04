@@ -47,10 +47,25 @@ def announceMessage():
         content = flask.request.json
         text = content['text']
         print(f"Received message: {text}")
-        
+
     except Exception as e:
         print(e)
         return 'Invalid JSON for announceMessage'
+
+    # get the list of files in the directory and fullPath of files
+    fileList = os.listdir('announceMessage')
+    fullPath = [f"announceMessage/{name}" for name in fileList]
+    
+    # determining fileName
+    if len([name for name in fileList]) == 0:
+            count = 1
+    else:
+        newestFile = max(fullPath, key=os.path.getctime)
+        count = int(newestFile.split('/')[-1].split('.')[0].split('_')[-1]) + 1
+
+    # save message to file
+    with open(f"announceMessage/message_{count}.txt", "w") as file:
+        file.writelines(text)
 
     engine = pyttsx3.init()
     engine.say(text)
@@ -65,40 +80,40 @@ def announceAudio():
         URL = content['URL']
         print(f"Received audio: {URL}")
 
-        fileType = URL.split('.')[-1]
-
-        # get the list of files in the directory and fullPath of files
-        fileList = os.listdir('announceAudio')
-        fullPath = [f"announceAudio/{name}" for name in fileList]
-
-        # remove oldest file
-        if len([name for name in fileList]) > 10:
-            oldestFile = min(fullPath, key=os.path.getctime)
-            os.remove(oldestFile)
-
-        # update list of files in dir and fullpath of files
-        fileList = os.listdir('announceAudio')
-        fullPath = [f"announceAudio/{name}" for name in fileList]
-
-        # determining new file name
-        if len([name for name in fileList]) == 0:
-            count = 1
-        else:
-            newestFile = max(fullPath, key=os.path.getctime)
-            count = int(newestFile.split('/')[-1].split('.')[0].split('_')[-1]) + 1
-
-        # download audio file
-        r = requests.get(URL)
-        with open(f"announceAudio/audio_{count}.{fileType}", "wb") as f:
-            f.write(r.content)
-        
-        # play audio file
-        player = vlc.MediaPlayer(f"/announceAudio/audio_{count}.{fileType}")
-        player.play()
-
     except Exception as e:
         print(e)
         return 'Invalid JSON for announceAudio'
+
+    fileType = URL.split('.')[-1]
+
+    # get the list of files in the directory and fullPath of files
+    fileList = os.listdir('announceAudio')
+    fullPath = [f"announceAudio/{name}" for name in fileList]
+
+    # remove oldest file
+    if len([name for name in fileList]) > 10:
+        oldestFile = min(fullPath, key=os.path.getctime)
+        os.remove(oldestFile)
+
+    # update list of files in dir and fullpath of files
+    fileList = os.listdir('announceAudio')
+    fullPath = [f"announceAudio/{name}" for name in fileList]
+
+    # determining new file name
+    if len([name for name in fileList]) == 0:
+        count = 1
+    else:
+        newestFile = max(fullPath, key=os.path.getctime)
+        count = int(newestFile.split('/')[-1].split('.')[0].split('_')[-1]) + 1
+
+    # download audio file
+    r = requests.get(URL)
+    with open(f"announceAudio/audio_{count}.{fileType}", "wb") as f:
+        f.write(r.content)
+    
+    # play audio file
+    player = vlc.MediaPlayer(f"/announceAudio/audio_{count}.{fileType}")
+    player.play()
 
     return 'OK'
 
