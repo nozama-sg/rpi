@@ -14,11 +14,11 @@ positiveResponses = 0
 
 userId = "darentan"
 foodImageUploadURL = "http://119.13.104.214:80/uploadFoodImage"
-rekognitionURL = "http://localhost:4000/api/Upload"
+rekognitionURL = "http://192.168.1.90:4000/api/Upload"
 
 def checkImage(count):
-    src_prevImage = cv2.imread(f"/home/pi/Documents/huawei-hackathon/rpi/images/image_{count-1}.jpg")
-    src_currentImage = cv2.imread(f"/home/pi/Documents/huawei-hackathon/rpi/images/image_{count}.jpg")
+    src_prevImage = cv2.imread(f"/home/pi/Documents/huawei-hackathon/rpi/camera/images/image_{count-1}.jpg")
+    src_currentImage = cv2.imread(f"/home/pi/Documents/huawei-hackathon/rpi/camera/images/image_{count}.jpg")
 
     # opencv compare histogram between src_prevImage and src_currentImage
     # if the difference is less than 10%, then it is a match
@@ -94,7 +94,7 @@ while True:
 
     # save image
     if s:
-        print(cv2.imwrite(f"/home/pi/Documents/huawei-hackathon/rpi/images/image_{count}.jpg",img)) 
+        print(cv2.imwrite(f"/home/pi/Documents/huawei-hackathon/rpi/camera/images/image_{count}.jpg",img)) 
 
     # comparison with previous image
     if count > 1:
