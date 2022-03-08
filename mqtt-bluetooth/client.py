@@ -13,8 +13,8 @@ client_userData = {
     "userId": 20,
     "deviceName": "iBeacon:c80c71ef-1086-4601-9dc1-c83eadb4be7c-0-0",
     "bluetoothUpdateURL": "http://119.13.104.214:80/locationUpdate",
-    "updateDelayTime": 2,
-    "timeOut": 10,
+    "updateDelayTime": 30,
+    "timeOut": 60,
     "lastLog": datetime.datetime.now(),
     "previousBaseStation": "",
     "valuesDict": {}
@@ -79,9 +79,13 @@ def onMessage(client, userdata, message):
 def onLog(client, userdata, level, buf):
     print(f"LOG: {buf}")
 
+def onConnect(client, userdata, level, flag):
+    print("Connected to MQTT server")
+
 client = paho.Client("RPi Client", userdata=client_userData)
 client.username_pw_set(userpass.user, userpass.password)
 client.on_message = onMessage
+client.on_connect = onConnect
 # client.on_log = onLog
 
 if client.connect(mqttServerIP, 1883) != 0:
