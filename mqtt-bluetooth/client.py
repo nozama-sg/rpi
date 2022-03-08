@@ -1,53 +1,85 @@
 import paho.mqtt.client as paho
 import sys
 import time
+import datetime
 import json
 import requests
 import userpass
 
-mqttServerIP = 'localhost'
-# mqttServerIP = '192.168.1.104'
+# mqttServerIP = 'localhost'
+mqttServerIP = '192.168.1.104'
 
-userId = "darentan"
-deviceName = 'iBeacon:c80c71ef-1086-4601-9dc1-c83eadb4be7c-0-0'
-bluetoothUpdateURL = "http://119.13.104.214:80/locationUpdate"
-updateDelayTime = 60
-
-valuesDict = {}
+client_userData = {
+    "userId": 20,
+    "deviceName": "iBeacon:c80c71ef-1086-4601-9dc1-c83eadb4be7c-0-0",
+    "bluetoothUpdateURL": "http://119.13.104.214:80/locationUpdate",
+    "updateDelayTime": 2,
+    "timeOut": 10,
+    "lastLog": datetime.datetime.now(),
+    "previousBaseStation": "",
+    "valuesDict": {}
+}
 
 def onMessage(client, userdata, message):
     baseStation = message.topic.split('/')[-1]
     message = json.loads(message.payload.decode())
     deviceId = message['id']
+
     rssi = message['rssi']
     mac = message['mac']
 
-    print(f"LOG: {baseStation}:{deviceId} | RSSI: {rssi} | MAC: {mac}")
+    if deviceId == userdata["deviceName"]:
+        userdata["lastLog"] = datetime.datetime.now()
+        print(f"LOG: {baseStation}:{deviceId} | RSSI: {rssi} | MAC: {mac}")
 
-    # we can incorporate the deviceId to enable multiple watch support
-    valuesDict[baseStation] = rssi
-    print(valuesDict)
+        userdata["valuesDict"][baseStation] = rssi
+        print(userdata["valuesDict"])
 
-    # get key in valuesDict with highest value
-    maxBaseStation = max(valuesDict, key=valuesDict.get)
-    print(maxBaseStation)
-    
-    data = {
-        "userId": userId,
-        "roomName": maxBaseStation,
-    }
+        # get key in valuesDict with highest value
+        maxBaseStation = max(userdata["valuesDict"], key=userdata["valuesDict"].get)
+        
+        # print(maxBaseStation)
+        
+        if maxBaseStation != userdata["previousBaseStation"]:
+            print("Base station changed. Updating server....")
+            
+            data = {
+                "userId": userdata["userId"],
+                "roomName": maxBaseStation,
+            }
 
-    response = requests.post(bluetoothUpdateURL, json=data)
+            response = requests.post(userdata['bluetoothUpdateURL'], json=data)
+            if response.status_code != 200:
+                print(f"ERROR: {response.status_code} | {response.text}")
+            else:
+                print(f"Updated server userId {data['userId']} with {data['roomName']}")
+        else:
+            print("Base station did not change. No update sent")
 
-    if response.status_code != 200:
-        print(f"ERROR: {response.status_code} | {response.text}")
+        userdata["previousBaseStation"] = maxBaseStation
+        time.sleep(userdata["updateDelayTime"])
 
-    time.sleep(updateDelayTime)
+    elif (datetime.datetime.now() - userdata["lastLog"]).seconds > userdata["timeOut"] and userdata["previousBaseStation"] != "Outside":
+        print(f"No device found for {userdata['timeOut']} seconds. Assuming that device is outside. Updating server...")
+
+        data = {
+            "userId": userdata["userId"],
+            "roomName": "Outside",
+        }
+
+        response = requests.post(userdata['bluetoothUpdateURL'], json=data)
+        if response.status_code != 200:
+            print(f"ERROR: {response.status_code} | {response.text}")
+        else:
+            print(f"Updated server userId {data['userId']} with {data['roomName']}")
+
+        userdata['previousBaseStation'] = "Outside"
+        userdata['lastLog'] = datetime.datetime.now()
     
 def onLog(client, userdata, level, buf):
     print(f"LOG: {buf}")
 
-client = paho.Client("RPi Client")
+client = paho.Client("RPi Client", userdata=client_userData)
 client.username_pw_set(userpass.user, userpass.password)
 client.on_message = onMessage
 # client.on_log = onLog
@@ -56,11 +88,12 @@ if client.connect(mqttServerIP, 1883) != 0:
     print("Could not connect to MQTT Broker")
     sys.exit(-1)
 
-client.subscribe(f"espresense/devices/{deviceName}/#")
+client.subscribe(f"espresense/devices/#")
 
 try:
     print("Press CTRL+C to exit....")
     client.loop_forever()
+    print('ok')
 except:
     print("Disconnecting from broker")
 
