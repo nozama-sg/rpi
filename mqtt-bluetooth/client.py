@@ -8,7 +8,7 @@ import userpass
 mqttServerIP = 'localhost'
 # mqttServerIP = '192.168.1.104'
 
-userId = "darentan"
+userId = 20
 deviceName = 'iBeacon:c80c71ef-1086-4601-9dc1-c83eadb4be7c-0-0'
 bluetoothUpdateURL = "http://119.13.104.214:80/locationUpdate"
 updateDelayTime = 60
