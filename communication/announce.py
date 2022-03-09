@@ -5,19 +5,29 @@ import os
 import requests
 import pyttsx3
 import vlc
+import userpass
+from pyngrok import ngrok
 
-userId = "15"
+userId = 20
 endpointUpdateURL = 'http://119.13.104.214:80/announcementEndpointUpdate'
+ngrok.set_auth_token(userpass.token)
 
 # creating tunnel endpoint
 print("Creating Tunnel")
 
-p = subprocess.Popen(['node', 'tunnel/tunnel.js'])
-while os.path.exists('tunnelURL.txt') == False:
-    time.sleep(1)
-with open('tunnelURL.txt') as file:
-    tunnelURL = file.read()
-os.remove('tunnelURL.txt')
+#p = subprocess.Popen(['node', 'tunnel/tunnel.js'])
+#while os.path.exists('tunnelURL.txt') == False:
+#    time.sleep(1)
+#with open('tunnelURL.txt') as file:
+#    tunnelURL = file.read()
+#os.remove('tunnelURL.txt')
+
+#tunnelURL = "http://" + tunnelURL.split("//")[-1] 
+
+ngrok_tunnel = ngrok.connect(5000)
+
+print(ngrok_tunnel.public_url)
+tunnelURL = ngrok_tunnel.public_url
 
 print(f"Tunnel created at URL: {tunnelURL}")
 
@@ -125,4 +135,4 @@ def announceAudio():
 def index():
     return f"Server is running on {tunnelURL}"
 
-app.run(host='localhost', port=5000)
+app.run(host='0.0.0.0', port=5000)

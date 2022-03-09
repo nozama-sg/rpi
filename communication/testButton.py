@@ -1,6 +1,6 @@
-import RPi.GPIO as GPIO # Import Raspberry Pi GPIO library
-GPIO.setwarnings(True) # Ignore warning for now
-GPIO.setmode(GPIO.BOARD) # DO NOT Use physical pin numbering
+import RPi.GPIO as GPIO
+GPIO.setwarnings(True)
+GPIO.setmode(GPIO.BOARD)
 GPIO.setup([18,7], GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
 while True:

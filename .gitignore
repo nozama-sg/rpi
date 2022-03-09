@@ -1,3 +1,4 @@
+communication/userpass.py
 communication/tunnel/node_modules/.bin/lt
 communication/tunnel/node_modules/.bin/lt.cmd
 communication/tunnel/node_modules/.bin/lt.ps1
