@@ -57,7 +57,7 @@ def onMessage(client, userdata, message):
             print("Base station did not change. No update sent")
 
         userdata["previousBaseStation"] = maxBaseStation
-        time.sleep(userdata["updateDelayTime"])
+        # time.sleep(userdata["updateDelayTime"])
 
     elif (datetime.datetime.now() - userdata["lastLog"]).seconds > userdata["timeOut"] and userdata["previousBaseStation"] != "Outside":
         print(f"No device found for {userdata['timeOut']} seconds. Assuming that device is outside. Updating server...")
@@ -75,6 +75,9 @@ def onMessage(client, userdata, message):
 
         userdata['previousBaseStation'] = "Outside"
         userdata['lastLog'] = datetime.datetime.now()
+        # time.sleep(userdata["updateDelayTime"])
+        # note: since there currently are issues with the timedelay, it is alternatively possible 
+        # to check the differences in rssi strength to determine whether to update server or not.
     
 def onLog(client, userdata, level, buf):
     print(f"LOG: {buf}")
