@@ -1,5 +1,4 @@
 import flask
-import subprocess
 import time
 import os
 import requests
@@ -8,27 +7,14 @@ import vlc
 import userpass
 from pyngrok import ngrok
 
-userId = 20
+userId = 22
 endpointUpdateURL = 'http://119.13.104.214:80/announcementEndpointUpdate'
 ngrok.set_auth_token(userpass.token)
 
 # creating tunnel endpoint
 print("Creating Tunnel")
-
-#p = subprocess.Popen(['node', 'tunnel/tunnel.js'])
-#while os.path.exists('tunnelURL.txt') == False:
-#    time.sleep(1)
-#with open('tunnelURL.txt') as file:
-#    tunnelURL = file.read()
-#os.remove('tunnelURL.txt')
-
-#tunnelURL = "http://" + tunnelURL.split("//")[-1] 
-
 ngrok_tunnel = ngrok.connect(5000)
-
-print(ngrok_tunnel.public_url)
 tunnelURL = ngrok_tunnel.public_url
-
 print(f"Tunnel created at URL: {tunnelURL}")
 
 # posting endpoint to GaussDB server
@@ -46,13 +32,12 @@ try:
         print(f"tunnelURl {tunnelURL} has been updated to database")
 
 except:
-    print('ERROR: UNABLE TO POST ENDPOINT TO SERVER')
+    print('ERROR: Unable to update server endpoint')
 
 # flask server
 app = flask.Flask(__name__)
 
-# TODO
-# announceAudio, recordAudio + sendAudio
+# announceAudio + sendAudio
 
 @app.route('/announceMessage', methods=['POST'])
 def announceMessage():
@@ -95,7 +80,8 @@ def announceAudio():
         print(f"Received audio: {URL}")
 
     except Exception as e:
-        print(e)
+        print(f"Error: {e}")
+        print(content)
         return 'Invalid JSON for announceAudio'
 
     fileType = URL.split('.')[-1]
