@@ -12,9 +12,9 @@ sleepTime = shortSleep
 matchValue = 0.7
 positiveResponses = 0
 
-userId = "darentan"
-foodImageUploadURL = "http://119.13.104.214:80/uploadFoodImage"
-rekognitionURL = "http://192.168.1.90:4000/api/Upload"
+userId = 22
+foodImageUploadURL = "http://119.13.104.214:80/food/upload"
+rekognitionURL = "http://192.168.1.98:4000/api/Upload"
 
 def checkImage(count):
     src_prevImage = cv2.imread(f"/home/pi/Documents/huawei-hackathon/rpi/camera/images/image_{count-1}.jpg")
@@ -109,7 +109,7 @@ while True:
             # send data to AWS
             rekognitionResponse = postImageRekognition(count)
             categories = [name['Name'] for name in rekognitionResponse]
-
+            categories = ['Dish', 'Meal']
             if "Dish" in categories or "Meal" in categories or "Food" in categories:
                 positiveResponses += 1
                 sleepTime = longSleep

@@ -10,8 +10,9 @@ import userpass
 mqttServerIP = '192.168.1.104'
 
 client_userData = {
-    "userId": 20,
-    "deviceName": "iBeacon:c80c71ef-1086-4601-9dc1-c83eadb4be7c-0-0",
+    "userId": 22,
+    "deviceName": "apple:1005:9-24",
+    #"deviceName": "iBeacon:c80c71ef-1086-4601-9dc1-c83eadb4be7c-0-0",
     "bluetoothUpdateURL": "http://119.13.104.214:80/locationUpdate",
     "updateDelayTime": 30,
     "timeOut": 60,
@@ -30,10 +31,10 @@ def onMessage(client, userdata, message):
 
     if deviceId == userdata["deviceName"]:
         userdata["lastLog"] = datetime.datetime.now()
-        print(f"LOG: {baseStation}:{deviceId} | RSSI: {rssi} | MAC: {mac}")
+        # print(f"LOG: {baseStation}:{deviceId} | RSSI: {rssi} | MAC: {mac}")
 
         userdata["valuesDict"][baseStation] = rssi
-        print(userdata["valuesDict"])
+        # print(userdata["valuesDict"])
 
         # get key in valuesDict with highest value
         maxBaseStation = max(userdata["valuesDict"], key=userdata["valuesDict"].get)
@@ -41,7 +42,7 @@ def onMessage(client, userdata, message):
         # print(maxBaseStation)
         
         if maxBaseStation != userdata["previousBaseStation"]:
-            print("Base station changed. Updating server....")
+            print(f"{datetime.datetime.now().strftime('%x %X')}: CHANGE: Updating server from {userdata['previousBaseStation']} to {maxBaseStation}....")
             
             data = {
                 "userId": userdata["userId"],
@@ -54,7 +55,7 @@ def onMessage(client, userdata, message):
             else:
                 print(f"Updated server userId {data['userId']} with {data['roomName']}")
         else:
-            print("Base station did not change. No update sent")
+            print(f"{datetime.datetime.now().strftime('%x %X')}: No change | {maxBaseStation} | {userdata['valuesDict']}")
 
         userdata["previousBaseStation"] = maxBaseStation
         # time.sleep(userdata["updateDelayTime"])
@@ -89,7 +90,7 @@ client = paho.Client("RPi Client", userdata=client_userData)
 client.username_pw_set(userpass.user, userpass.password)
 client.on_message = onMessage
 client.on_connect = onConnect
-client.on_log = onLog
+#client.on_log = onLog
 
 if client.connect(mqttServerIP, 1883) != 0:
     print("Could not connect to MQTT Broker")
