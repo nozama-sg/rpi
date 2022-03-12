@@ -38,21 +38,6 @@ def checkImage(count):
 
     return score
 
-def postImageRekognition(imageName):
-    with open(f"images/image_{imageName}.jpg", "rb") as imageFile:
-        imageData = base64.b64encode(imageFile.read())
-    
-    data = {
-        "b64": imageData.decode()
-    }
-    
-    response = requests.post(rekognitionURL, json=data)
-    
-    # read response in json
-    response = json.loads(response.text)
-
-    return response
-
 def postImageHuawei(imageName, userId):
     with open(f"images/image_{imageName}.jpg", "rb") as imageFile:
         imageData = base64.b64encode(imageFile.read())
@@ -105,19 +90,17 @@ while True:
         else: # no match
             print(f"NO MATCH  between image_{count-1}.jpg and image_{count}.jpg Score: {score}")
 
+            # send to ecs
+            huaweiResponse = postImageHuawei(count, userId)
+            foodFound = huaweiResponse.json()['foodFound']
             
-            # send data to AWS
-            rekognitionResponse = postImageRekognition(count)
-            categories = [name['Name'] for name in rekognitionResponse]
-            categories = ['Dish', 'Meal']
-            if "Dish" in categories or "Meal" in categories or "Food" in categories:
+            if foodFound :
                 positiveResponses += 1
                 sleepTime = longSleep
 
                 if positiveResponses == 1:
-                    # send to OBS
-                    if postImageHuawei(count, userId).status_code  == 200:
-                        print(f"Image {count}.jpg has been successfully uploaded to Huawei OBS")
+                    if huaweiResponse.status_code  == 200:
+                        print(f"Food Detected, Image {count}.jpg has been successfully uploaded to Huawei OBS")
                     else:
                         print("Error uploaded to Huawei OBS")
 
