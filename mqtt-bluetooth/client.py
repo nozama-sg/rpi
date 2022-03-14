@@ -6,8 +6,8 @@ import json
 import requests
 import userpass
 
-# mqttServerIP = 'localhost'
-mqttServerIP = '192.168.1.104'
+mqttServerIP = 'localhost'
+# mqttServerIP = '192.168.1.104'
 
 client_userData = {
     "userId": 22,
@@ -90,7 +90,7 @@ client = paho.Client("RPi Client", userdata=client_userData)
 client.username_pw_set(userpass.user, userpass.password)
 client.on_message = onMessage
 client.on_connect = onConnect
-#client.on_log = onLog
+client.on_log = onLog
 
 if client.connect(mqttServerIP, 1883) != 0:
     print("Could not connect to MQTT Broker")
