@@ -6,7 +6,7 @@ import wave
 import vlc
 import time
 import RPi.GPIO as GPIO
-from gtss import gTTS
+from gtts import gTTS
 
 recordingUploadURL = 'http://119.13.104.214:80/recordedElderlyMessage'
 userId = 22
@@ -128,11 +128,11 @@ while True:
 			with open(latestFile) as file:
 				text = file.readlines()
 
-			    tts = gTTS(text)
-				tts.save('announceMessage-tmp.mp3')
-				player = vlc.MediaPlayer('reminder.mp3')
-				player.play()
-				os.remove('announceMessage-tmp.mp3')
+			tts = gTTS(text)
+			tts.save('announceMessage-tmp.mp3')
+			player = vlc.MediaPlayer('reminder.mp3')
+			player.play()
+			os.remove('announceMessage-tmp.mp3')
 
 		else:
 			player = vlc.MediaPlayer(latestFile)

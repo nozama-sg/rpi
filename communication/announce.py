@@ -6,7 +6,7 @@ import vlc
 import userpass
 import sqlite3
 import datetime
-from gtss import gTTS
+from gtts import gTTS
 from pyngrok import ngrok
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -50,11 +50,10 @@ def announceReminder(reminderTimeUUID):
 
     tts = gTTS(f"This is a reminder to take your {medicineName['medicine']} medicine.")
     tts.save('reminder-tmp.mp3')
-    player = vlc.MediaPlayer('reminder.mp3')
+    player = vlc.MediaPlayer('reminder-tmp.mp3')
     player.play()
     time.sleep(1)
 
-    player = vlc.MediaPlayer('reminder.mp3')
     player.play()
 
     os.remove('reminder-tmp.mp3')
