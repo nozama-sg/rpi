@@ -5,11 +5,12 @@ import requests
 import vlc
 import userpass
 import sqlite3
+import datetime
 from gtss import gTTS
 from pyngrok import ngrok
 from apscheduler.schedulers.background import BackgroundScheduler
 
-scheduler = BackgroundScheduler()
+scheduler = BackgroundScheduler({'apscheduler.timezone': 'Asia/Singapore'})
 
 userId = 22
 endpointUpdateURL = 'http://119.13.104.214:80/announcementEndpointUpdate'
@@ -26,25 +27,24 @@ data = {
     "userId": userId,
     "tunnelUrl": tunnelURL
 }
-
 try:
     response = requests.post(endpointUpdateURL, json=data)
-
     if response.status_code != 200:
         print(f"\nENDPOINT POST ERROR: {response.status_code} | {response.text}")
     else:
         print(f"tunnelURl {tunnelURL} has been updated to database")
-
 except:
     print('ERROR: Unable to update server endpoint')
 
-def announceReminder():
+
+def announceReminder(reminderTimeUUID):
+    print('Announcing Reminder!')
     print(reminderTimeUUID)
     db = sqlite3.connect('reminders.db')
     db.row_factory = sqlite3.Row
     cursor = db.cursor()
 
-    medicineName = cursor.execute("SELECT medicine FROM medicine INNERJOIN reminderTime on medicine.medicineReminderId = reminderTime.medicineReminderId WHERE reminderTime.reminderTimeUUID = ?", (reminderTimeUUID,)).fetchone()
+    medicineName = cursor.execute("""SELECT medicine.medicine FROM medicine INNER JOIN reminderTime on medicine.medicineReminderId = reminderTime.medicineReminderId WHERE reminderTime.reminderTimeUUID = ?""", (reminderTimeUUID,)).fetchone()
 
     print(medicineName)
 
@@ -59,11 +59,28 @@ def announceReminder():
 
     os.remove('reminder-tmp.mp3')
 
+    print("Reminder announced!")
+
 # flask server
 app = flask.Flask(__name__)
 
-# announceAudio + sendAudio
+# start scheduler
+scheduler.start()
+db = sqlite3.connect('reminders.db')
+db.row_factory = sqlite3.Row
+cursor = db.cursor()
 
+results = cursor.execute("""SELECT * FROM reminderTime""").fetchall()
+for reminderItem in results:
+    reminderTime = reminderItem['reminderTime']
+    reminderTimeUUID = reminderItem['reminderTimeUUID']
+
+    hourNum = int(reminderTime.split(':')[0])
+    minuteNum = int(reminderTime.split(':')[1])
+
+    scheduler.add_job(announceReminder, 'cron', hour=hourNum, minute=minuteNum, id=str(reminderTimeUUID), args=[reminderTimeUUID])
+    
+# announceAudio + sendAudio
 @app.route('/announceMessage', methods=['POST'])
 def announceMessage():
     try:
@@ -151,13 +168,13 @@ def addMedicineReminder():
     cursor = db.cursor()
 
     try:
-        userId = flask.request.json['userId']
+        userId = int(flask.request.json['userId'])
         medicine = flask.request.json['medicine']
         timeList = flask.request.json['time']
     except Exception as e:
         return f"Invalid JSON, Error: {e}"
 
-    result = cursor.execute("SELECT * FROM medicine WHERE userId = {userId} AND medicine = '{medicine}'").fetchall()
+    result = cursor.execute(f"SELECT * FROM medicine WHERE userId = {userId} AND medicine = '{medicine}'").fetchall()
     if len(result) != 0:
         return f"Already exists"
 
@@ -165,22 +182,34 @@ def addMedicineReminder():
     cursor.execute(f"INSERT INTO medicine(userId, medicine) VALUES (?,?)",(userId, medicine))
     db.commit()
 
-    medicineReminderId = cursor.execute("SELECT * FROM medicine WHERE userId = {userId} AND medicine = '{medicine}'").fetchall()[0]['medicineReminderId']
+    medicineReminderId = cursor.execute(f"SELECT * FROM medicine WHERE userId = {userId} AND medicine = '{medicine}'").fetchall()[0]['medicineReminderId']
 
     # insert timing into reminderTime
     for time in timeList:
-        cursor.execute(f"INSERT INTO reminderTime(medicineReminderId, reminderTIme) VALUES ({medicineReminderId}, {time})")
+        cursor.execute("""INSERT INTO reminderTime(medicineReminderId, reminderTime) VALUES (?,?)""", (medicineReminderId, time))
 
-        reminderTimeUUID = cursor.execute(f"SELECT * FROM reminderTime WHERE medicineReminderId = {medicineReminderId} AND reminderTime = {time}").fetchall()[0]['reminderTimeUUID']
+        reminderTimeUUID = cursor.execute("""SELECT * FROM reminderTime WHERE medicineReminderId = ? AND reminderTime = ?""",(medicineReminderId, time)).fetchall()[0]['reminderTimeUUID']
 
         hourNum = int(time.split(':')[0])
         minuteNum = int(time.split(':')[1])
 
-        scheduler.add_job(announceReminder, 'cron', hour=hourNum, minutes=minNum, id=reminderTimeUUID, args=[reminderTimeUUID])
+        scheduler.add_job(announceReminder, 'cron', hour=hourNum, minute=minuteNum, id=str(reminderTimeUUID), args=[reminderTimeUUID])
 
     db.commit()
+    
 
-    return medicineReminderId
+    #announceReminder(reminderTimeUUID='hi')
+    #schedules = []
+    #for job in scheduler.get_jobs():
+    #    jobdict = {}
+    #    for f in job.trigger.fields:
+    #        curval = str(f)
+    #        jobdict[f.name] = curval
+    #    schedules.append(jobdict)
+
+    #print(schedules)
+    #print(datetime.datetime.now(scheduler.timezone))
+    return str(medicineReminderId)
 
 @app.route('/medicineReminder/delete', methods=['POST'])
 def deleteMedicineReminder():
@@ -193,15 +222,22 @@ def deleteMedicineReminder():
     except Exception as e:
         return f"Invalid JSON, Error: {e}"
 
-    result = cursor.execute(f"SELECT * FROM medicine WHERE medicineReminderId = {medicineReminderId}").fetchall()
+    result = cursor.execute("""SELECT * FROM medicine WHERE medicineReminderId = ?""",(medicineReminderId,)).fetchall()
 
     if len(result) == 0:
         return f"Medicine does not exist"
 
     reminders = cursor.execute(f"SELECT * FROM reminderTime WHERE medicineReminderId = {medicineReminderId}").fetchall()
 
+    if len(reminders) == 0:
+       return f"All reminders already deleted"
+
     for reminder in reminders:
-        scheduler.remove_job(reminder['reminderTimeUUID'])
+        scheduler.remove_job(str(reminder['reminderTimeUUID']))
+
+    cursor.execute(f"DELETE FROM reminderTime WHERE medicineReminderId = {medicineReminderId}")
+    cursor.execute(f"DELETE FROM medicine WHERE medicineReminderId = {medicineReminderId}")
+    db.commit()
 
     return 'OK'
 
