@@ -1,5 +1,4 @@
 import pyaudio
-import pyttsx3
 import os
 import requests
 import base64
@@ -7,6 +6,7 @@ import wave
 import vlc
 import time
 import RPi.GPIO as GPIO
+from gtss import gTTS
 
 recordingUploadURL = 'http://119.13.104.214:80/recordedElderlyMessage'
 userId = 22
@@ -39,9 +39,8 @@ while True:
 						input=True,
 						frames_per_buffer=CHUNK)
 
-		engine = pyttsx3.init()
-		engine.say("Recording started")
-		engine.runAndWait()
+		player = vlc.MediaPlayer('recording-started.mp3')
+		player.play()
 
 		print("Start recording")
 		frames = []
@@ -53,9 +52,8 @@ while True:
 				print("Stopped recording")
 				startRecord = not startRecord
 				time.sleep(1)
-				engine = pyttsx3.init()
-				engine.say("Recording stopped")
-				engine.runAndWait()
+				player = vlc.MediaPlayer('recording-stopped.mp3')
+				player.play()
 
 		sample_width = p.get_sample_size(FORMAT)
 		stream.stop_stream()
@@ -130,9 +128,11 @@ while True:
 			with open(latestFile) as file:
 				text = file.readlines()
 
-			engine = pyttsx3.init()
-			engine.say(text)
-			engine.runAndWait()
+			    tts = gTTS(text)
+				tts.save('announceMessage-tmp.mp3')
+				player = vlc.MediaPlayer('reminder.mp3')
+				player.play()
+				os.remove('announceMessage-tmp.mp3')
 
 		else:
 			player = vlc.MediaPlayer(latestFile)

@@ -2,11 +2,11 @@ import flask
 import time
 import os
 import requests
-import pyttsx3
 import vlc
 import userpass
 import sqlite3
 import datetime
+from gtss import gTTS
 from pyngrok import ngrok
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -48,12 +48,16 @@ def announceReminder(reminderTimeUUID):
 
     print(medicineName)
 
-    engine = pyttsx3.init()
-    engine.say(f"This is a reminder to take your {medicineName['medicine']} medicine.")
-    engine.runAndWait()
+    tts = gTTS(f"This is a reminder to take your {medicineName['medicine']} medicine.")
+    tts.save('reminder-tmp.mp3')
+    player = vlc.MediaPlayer('reminder.mp3')
+    player.play()
     time.sleep(1)
-    engine.say(f"This is a reminder to take your {medicineName['medicine']} medicine.")
-    engine.runAndWait()
+
+    player = vlc.MediaPlayer('reminder.mp3')
+    player.play()
+
+    os.remove('reminder-tmp.mp3')
 
     print("Reminder announced!")
 
@@ -104,10 +108,12 @@ def announceMessage():
     with open(f"./announceMessage/message_{count}.txt", "w") as file:
         file.writelines(text)
 
-    engine = pyttsx3.init()
-    engine.say(text)
-    engine.runAndWait()
-    
+    tts = gTTS(text)
+    tts.save('announceMessage-tmp.mp3')
+    player = vlc.MediaPlayer('reminder.mp3')
+    player.play()
+    os.remove('announceMessage-tmp.mp3')
+
     return "OK"
 
 @app.route('/announceAudio', methods=['POST'])
