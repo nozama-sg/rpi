@@ -10,7 +10,7 @@ mqttServerIP = 'localhost'
 # mqttServerIP = '192.168.1.104'
 
 client_userData = {
-    "userId": 22,
+    "userId": 230,
     "deviceName": "apple:1005:9-24",
     #"deviceName": "iBeacon:c80c71ef-1086-4601-9dc1-c83eadb4be7c-0-0",
     "bluetoothUpdateURL": "http://119.13.104.214:80/locationUpdate",
@@ -90,7 +90,7 @@ client = paho.Client("RPi Client", userdata=client_userData)
 client.username_pw_set(userpass.user, userpass.password)
 client.on_message = onMessage
 client.on_connect = onConnect
-client.on_log = onLog
+#client.on_log = onLog
 
 if client.connect(mqttServerIP, 1883) != 0:
     print("Could not connect to MQTT Broker")

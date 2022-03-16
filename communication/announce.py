@@ -12,7 +12,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 scheduler = BackgroundScheduler({'apscheduler.timezone': 'Asia/Singapore'})
 
-userId = 22
+userId = 227
 endpointUpdateURL = 'http://119.13.104.214:80/announcementEndpointUpdate'
 ngrok.set_auth_token(userpass.token)
 
@@ -109,8 +109,9 @@ def announceMessage():
 
     tts = gTTS(text)
     tts.save('announceMessage-tmp.mp3')
-    player = vlc.MediaPlayer('reminder.mp3')
+    player = vlc.MediaPlayer('announceMessage-tmp.mp3')
     player.play()
+    time.sleep(3)
     os.remove('announceMessage-tmp.mp3')
 
     return "OK"
@@ -239,6 +240,35 @@ def deleteMedicineReminder():
     db.commit()
 
     return 'OK'
+
+@app.route('/getAllMedicineReminders', methods=['POST'])
+def getAllMedicineReminders():
+    db = sqlite3.connect("reminders.db")
+    db.row_factory = sqlite3.Row
+    cursor = db.cursor()
+
+    try:
+        userId = flask.request.json['userId']
+    except Exception as e:
+        return f"Invalid JSON, Error: {e}"
+
+    result = cursor.execute("""SELECT * FROM medicine WHERE userId = ?""",(userId,)).fetchall()
+
+    if len(result) == 0:
+        return f"User does not exist"
+
+    returnList = []
+    for medicine in result:
+        reminderId = medicine['medicineReminderId']
+        reminderTimes = cursor.execute("""SELECT * FROM reminderTime WHERE medicineReminderId = ?""",(reminderId,)).fetchall()
+        timeList = []
+        for reminderTime in reminderTimes:
+            timeList.append(reminderTime['reminderTime'])
+        
+        returnList.append({"medId":reminderId, "medicine":medicine['medicine'], "time":timeList})
+
+    return flask.jsonify({'data':returnList})
+
 
 @app.route('/')
 def index():

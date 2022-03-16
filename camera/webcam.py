@@ -8,11 +8,14 @@ import time
 shortSleep = 60 * 5
 longSleep = 60 * 20
 
+shortSleep = 2
+longSleep = 5
+
 sleepTime = shortSleep
 matchValue = 0.7
 positiveResponses = 0
 
-userId = 22
+userId = 230
 foodImageUploadURL = "http://119.13.104.214:80/food/upload"
 rekognitionURL = "http://192.168.1.98:4000/api/Upload"
 
@@ -74,6 +77,9 @@ while True:
 
     # capture image with cv2
     cam = cv2.VideoCapture(0)
+    cam.set(3, 1280)
+    cam.set(4, 720)
+
     s, img = cam.read()
     cam.release()
 

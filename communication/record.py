@@ -9,7 +9,7 @@ import RPi.GPIO as GPIO
 from gtts import gTTS
 
 recordingUploadURL = 'http://119.13.104.214:80/recordedElderlyMessage'
-userId = 22
+userId = 227
 
 # GPIO.setwarnings(True)
 GPIO.setmode(GPIO.BOARD)
@@ -127,10 +127,12 @@ while True:
 		if extension == 'txt':
 			with open(latestFile) as file:
 				text = file.readlines()
-
-			tts = gTTS(text)
+			textLines = ''
+			for i in text:
+				textLines += str(i)
+			tts = gTTS(textLines)
 			tts.save('announceMessage-tmp.mp3')
-			player = vlc.MediaPlayer('reminder.mp3')
+			player = vlc.MediaPlayer('announceMessage-tmp.mp3')
 			player.play()
 			os.remove('announceMessage-tmp.mp3')
 
